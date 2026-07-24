@@ -16,7 +16,7 @@ rstan_options(auto_write = TRUE)
 
 # Settings ---------------------------------------------------------------------------
 use_size_effect <- 1
-nchains <- 4
+nchains <- 3
 niter <- 1000
 nwarmup <- 500
 adapt_delta <- 0.99

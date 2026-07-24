@@ -10,7 +10,27 @@ library(loo)
 
 source("scripts/02_GetData.R")
 
-load(file="results/fit_CovIndCont_MaxFlow_FL.Rdata")
+# Change this block when generating predictions from a different CJS fit.
+prediction_config <- list(
+  fit_file = here("results", "fit_CovIndContv2_TT_clean_MaxFlow_FL.Rdata"),
+  output_tag = "MaxFlowFL"
+)
+
+output_tag <- prediction_config$output_tag
+
+dir.create(here("results", "tables"), recursive = TRUE, showWarnings = FALSE)
+dir.create(here("results", "figures"), recursive = TRUE, showWarnings = FALSE)
+
+tagged_table_file <- function(prefix) {
+  here("results", "tables", paste0(prefix, "_", output_tag, ".csv"))
+}
+
+tagged_fig_file <- function(prefix, suffix = NULL) {
+  name_parts <- c(prefix, suffix, output_tag)
+  here("results", "figures", paste0(paste(name_parts, collapse = "_"), ".png"))
+}
+
+load(file = prediction_config$fit_file)
 draws <- as_draws_array(fit)
 draws_df <- as_draws_df(fit)
 
@@ -580,7 +600,7 @@ survfor_nore_summary <- data.frame(
 (survforecast_Sac_fig <- ggplot() + 
     geom_ribbon(data = survfor_summary,aes(x = Flow, ymin = lwr, ymax = upr),fill = "grey70", alpha = 0.6) +
     geom_line(data = survfor_summary,aes(x = Flow, y = mean),color = "black", size = 1.2) +
-    geom_rug(data=d_Sac_sort,aes(x = Maxflowsac), sides = "b", alpha = 0.5) + 
+    geom_rug(data=d_Sac_sort,aes(x = Maxflowsac), sides = "b", alpha = 0.5, inherit.aes = FALSE) + 
     geom_line(data=survfor_nore_summary,aes(x = Flow, y = mean), size = 1, color = "darkblue") +
     geom_ribbon(data=survfor_nore_summary,aes(x =Flow, y = mean,ymin =lwr, ymax =upr),
                 fill="darkblue",alpha = .25)+
@@ -627,7 +647,7 @@ survforB_nore_summary <- data.frame(
 (survforecast_But_fig <- ggplot() + 
     geom_ribbon(data = survforB_summary,aes(x = Flow, ymin = lwr, ymax = upr),fill = "grey70", alpha = 0.6) +
     geom_line(data = survforB_summary,aes(x = Flow, y = mean),color = "black", size = 1.2) +
-    geom_rug(data=d_FeaBut_sort,aes(x = MaxflowB), sides = "b", alpha = 0.5) + 
+    geom_rug(data=d_FeaBut_sort,aes(x = MaxflowB), sides = "b", alpha = 0.5, inherit.aes = FALSE) + 
     geom_line(data=survforB_nore_summary,aes(x = Flow, y = mean), size = 1, color = "darkblue") +
     geom_ribbon(data=survforB_nore_summary,aes(x =Flow, y = mean,ymin =lwr, ymax =upr),
                 fill="darkblue",alpha = .25)+
@@ -665,7 +685,7 @@ survforF_nore_summary <- data.frame(
 (survforecast_Fea_fig <- ggplot() + 
     geom_ribbon(data = survforF_summary,aes(x = Flow, ymin = lwr, ymax = upr),fill = "grey70", alpha = 0.6) +
     geom_line(data = survforF_summary,aes(x = Flow, y = mean),color = "black", size = 1.2) +
-    geom_rug(data=d_FeaBut_sort,aes(x = MaxflowF), sides = "b", alpha = 0.5) + 
+    geom_rug(data=d_FeaBut_sort,aes(x = MaxflowF), sides = "b", alpha = 0.5, inherit.aes = FALSE) + 
     geom_line(data=survforF_nore_summary,aes(x = Flow, y = mean), size = 1, color = "darkblue") +
     geom_ribbon(data=survforF_nore_summary,aes(x =Flow, y = mean,ymin =lwr, ymax =upr),
                 fill="darkblue",alpha = .25)+
@@ -707,10 +727,12 @@ survforSz_nore_summary <- data.frame(
 (survforecastSz_Sac_fig <- ggplot() + 
     geom_ribbon(data = survforSz_summary,aes(x = Size, ymin = lwr, ymax = upr),fill = "grey70", alpha = 0.6) +
     geom_line(data = survforSz_summary,aes(x = Size, y = mean),color = "black", size = 1.2) +
-    geom_rug(data=d_Sac_sort,aes(x = fish_length), sides = "b", alpha = 0.5) + 
     geom_line(data=survforSz_nore_summary,aes(x = Size, y = mean), size = 1, color = "darkblue") +
     geom_ribbon(data=survforSz_nore_summary,aes(x = Size, y = mean,ymin =lwr, ymax =upr),
                 fill="darkblue",alpha = .25)+
+    geom_rug(data=d_Sac_sort,aes(x = fish_length), sides = "b", alpha = 0.8,
+             colour = "black", linewidth = 0.4, length = grid::unit(0.03, "npc"),
+             inherit.aes = FALSE) + 
     theme_bw()+
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -745,10 +767,12 @@ survforSz_B_nore_summary <- data.frame(
 (survforecastSz_But_fig <- ggplot() + 
     geom_ribbon(data = survforSz_B_summary,aes(x = Size, ymin = lwr, ymax = upr),fill = "grey70", alpha = 0.6) +
     geom_line(data = survforSz_B_summary,aes(x = Size, y = mean),color = "black", size = 1.2) +
-    geom_rug(data=d_FeaBut_sort %>% filter(!rl %in% c("1F","2F")),aes(x = fish_length), sides = "b", alpha = 0.5) + 
     geom_line(data=survforSz_B_nore_summary,aes(x = Size, y = mean), size = 1, color = "darkblue") +
     geom_ribbon(data=survforSz_B_nore_summary,aes(x = Size, y = mean,ymin =lwr, ymax =upr),
                 fill="darkblue",alpha = .25)+
+    geom_rug(data=d_FeaBut_sort %>% filter(release_trib == "Butte"),aes(x = fish_length),
+             sides = "b", alpha = 0.8, colour = "black", linewidth = 0.4,
+             length = grid::unit(0.03, "npc"), inherit.aes = FALSE) + 
     theme_bw()+
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -784,10 +808,12 @@ survforSz_F_nore_summary <- data.frame(
 (survforecastSz_Fea_fig <- ggplot() + 
     geom_ribbon(data = survforSz_F_summary,aes(x = Size, ymin = lwr, ymax = upr),fill = "grey70", alpha = 0.6) +
     geom_line(data = survforSz_F_summary,aes(x = Size, y = mean),color = "black", size = 1.2) +
-    geom_rug(data=d_FeaBut_sort  %>% filter(rl %in% c("1F","2F")),aes(x = fish_length), sides = "b", alpha = 0.5) + 
     geom_line(data=survforSz_F_nore_summary,aes(x = Size, y = mean), size = 1, color = "darkblue") +
     geom_ribbon(data=survforSz_F_nore_summary,aes(x = Size, y = mean,ymin =lwr, ymax =upr),
                 fill="darkblue",alpha = .25)+
+    geom_rug(data=d_FeaBut_sort  %>% filter(release_trib == "Feather"),aes(x = fish_length),
+             sides = "b", alpha = 0.8, colour = "black", linewidth = 0.4,
+             length = grid::unit(0.03, "npc"), inherit.aes = FALSE) + 
     theme_bw()+
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -870,13 +896,14 @@ tt_dfT$travel_time <- as.vector(tt_predT)
 
 tt_fish_metaT <- data.frame(
   fish = 1:dim(tt_predT)[2],
-  study_id = d_FeaBut_sort$StudyID
+  study_id = d_FeaBut_sort$StudyID,
+  release_trib = d_FeaBut_sort$release_trib
 ) %>% 
   left_join(study_lookupT, by = c("study_id" = "study"))
 
 tt_summary_dfT <- tt_dfT %>% 
   left_join(tt_fish_metaT, by = "fish") %>% 
-  group_by(study_id, year, reach) %>% 
+  group_by(study_id, year, release_trib, reach) %>% 
   summarise(
     mean = mean(travel_time, na.rm = TRUE),
     lwr = quantile(travel_time, 0.025, na.rm = TRUE),
@@ -937,13 +964,43 @@ tt_relsac_summary <- tt_relsac_df %>%
 
 ggsave(plot=tt_relsac_fig, filename = tagged_fig_file("tt_relsac"), width =7, height = 6)
 
+# plot tributary release to Sacramento travel time for each release group
+tt_tribrelsac_summary <- tt_summary_dfT %>% 
+  filter(reach == "Rel-Sac") %>% 
+  mutate(WY = case_when(year %in% c(2013,2014,2015,2016,2018,2020, 2021, 2022) ~ 'D',
+                        TRUE ~ 'W'))
+
+plot_tt_tribrelsac <- function(summary_df, trib_name) {
+  plot_df <- summary_df %>% 
+    filter(release_trib == trib_name) %>% 
+    arrange(year, study_id) %>% 
+    mutate(study_id = factor(study_id, levels = unique(study_id)))
+  
+  ggplot(plot_df, aes(x = study_id, y = mean, colour = WY)) +
+    geom_point(size = 4) +
+    geom_errorbar(aes(ymin = lwr, ymax = upr, colour = WY), width = 0.2, size = 1) +
+    theme_bw()+
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"),
+          text = element_text(size=18), axis.text.x = element_text(size=10, angle = 45, hjust = 1))+
+    xlab("") + ylab("Rel - Sac travel time (days)") +
+    ggtitle(trib_name) +
+    scale_color_manual(values = c("D"="red","W"="blue"), name = NULL)
+}
+
+(tt_tribrelsac_But_fig <- plot_tt_tribrelsac(tt_tribrelsac_summary, "Butte"))
+ggsave(plot=tt_tribrelsac_But_fig, filename = tagged_fig_file("tt_tribrelsac", "But"), width =7, height = 6)
+
+(tt_tribrelsac_Fea_fig <- plot_tt_tribrelsac(tt_tribrelsac_summary, "Feather"))
+ggsave(plot=tt_tribrelsac_Fea_fig, filename = tagged_fig_file("tt_tribrelsac", "Fea"), width =7, height = 6)
+
 # flow forecast travel time plots
 ttfor_summary <- summarise_draw_matrix(stm$TTForecast, flow_vec, "Flow")
 
 (ttforecast_Sac_fig <- ggplot(ttfor_summary, aes(x = Flow, y = mean)) +
     geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "grey70", alpha = 0.6) +
     geom_line(color = "black", size = 1.2) +
-    geom_rug(data=d_Sac_sort,aes(x = Maxflowsac), sides = "b", alpha = 0.5) +
+    geom_rug(data=d_Sac_sort,aes(x = Maxflowsac), sides = "b", alpha = 0.5, inherit.aes = FALSE) +
     theme_bw()+
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -960,7 +1017,7 @@ ttforB_summary <- summarise_draw_matrix(stm$TTForecastT[,,1], XvecB, "Flow")
 (ttforecast_But_fig <- ggplot(ttforB_summary, aes(x = Flow, y = mean)) +
     geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "grey70", alpha = 0.6) +
     geom_line(color = "black", size = 1.2) +
-    geom_rug(data=d_FeaBut_sort,aes(x = MaxflowB), sides = "b", alpha = 0.5) +
+    geom_rug(data=d_FeaBut_sort,aes(x = MaxflowB), sides = "b", alpha = 0.5, inherit.aes = FALSE) +
     theme_bw()+
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -976,7 +1033,7 @@ ttforF_summary <- summarise_draw_matrix(stm$TTForecastT[,,2], XvecF, "Flow")
 (ttforecast_Fea_fig <- ggplot(ttforF_summary, aes(x = Flow, y = mean)) +
     geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "grey70", alpha = 0.6) +
     geom_line(color = "black", size = 1.2) +
-    geom_rug(data=d_FeaBut_sort,aes(x = MaxflowF), sides = "b", alpha = 0.5) +
+    geom_rug(data=d_FeaBut_sort,aes(x = MaxflowF), sides = "b", alpha = 0.5, inherit.aes = FALSE) +
     theme_bw()+
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -993,7 +1050,7 @@ ttforSz_summary <- summarise_draw_matrix(stm$TTForecastSz[,,12], size_vec, "Size
 (ttforecastSz_Sac_fig <- ggplot(ttforSz_summary, aes(x = Size, y = mean)) +
     geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "grey70", alpha = 0.6) +
     geom_line(color = "black", size = 1.2) +
-    geom_rug(data=d_Sac_sort,aes(x = fish_length), sides = "b", alpha = 0.5) +
+    geom_rug(data=d_Sac_sort,aes(x = fish_length), sides = "b", alpha = 0.5, inherit.aes = FALSE) +
     theme_bw()+
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -1009,7 +1066,7 @@ ttforSz_B_summary <- summarise_draw_matrix(stm$TTForecastTSz[,,12,1], size_vec, 
 (ttforecastSz_But_fig <- ggplot(ttforSz_B_summary, aes(x = Size, y = mean)) +
     geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "grey70", alpha = 0.6) +
     geom_line(color = "black", size = 1.2) +
-    geom_rug(data=d_FeaBut_sort %>% filter(!rl %in% c("1F","2F")),aes(x = fish_length), sides = "b", alpha = 0.5) +
+    geom_rug(data=d_FeaBut_sort %>% filter(release_trib == "Butte"),aes(x = fish_length), sides = "b", alpha = 0.5, inherit.aes = FALSE) +
     theme_bw()+
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -1025,7 +1082,7 @@ ttforSz_F_summary <- summarise_draw_matrix(stm$TTForecastTSz[,,12,2], size_vec, 
 (ttforecastSz_Fea_fig <- ggplot(ttforSz_F_summary, aes(x = Size, y = mean)) +
     geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "grey70", alpha = 0.6) +
     geom_line(color = "black", size = 1.2) +
-    geom_rug(data=d_FeaBut_sort %>% filter(rl %in% c("1F","2F")),aes(x = fish_length), sides = "b", alpha = 0.5) +
+    geom_rug(data=d_FeaBut_sort %>% filter(release_trib == "Feather"),aes(x = fish_length), sides = "b", alpha = 0.5, inherit.aes = FALSE) +
     theme_bw()+
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"),

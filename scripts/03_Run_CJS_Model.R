@@ -8,8 +8,11 @@ rm(list = ls())
 source("scripts/02_GetData.R")
 
 nchains <- 3
-niter <- 4000
-nwarmup <- 2000
+niter <- 3000
+nwarmup <- 1500
+adapt_delta <- 0.995
+max_treedepth <- 15
+
 for(irun in 15:15){
   ModNm <- switch(irun,"NoCov","CovIndWY","CovIndWY","CovIndWY","CovIndWY",
                   "CovIndWY","CovIndWY","CovIndWY","CovIndWY","CovIndWY",
@@ -362,7 +365,7 @@ for(irun in 15:15){
                    "S_bCov","S_bCovT","S_bSz",
                    "REy_sd","REs_sd","S_REy","S_REs",'log_lik') #"S_REyt","REy_sdT","TT_REyT","TTREy_sdT",
   
-    inits1 <- list(P_b=matrix(data=2.2,nrow=Nyrs+1,ncol=Nreaches),muPb=rep(0,Nreaches),sdPb=rep(1.0,Nreaches),
+    inits1 <- list(P_b=matrix(data=2.2,nrow=Nyrs,ncol=Nreaches),muPb=rep(0,Nreaches),sdPb=rep(1.0,Nreaches),
                  #  S_bCov=rep(0,2), S_bCovT=rep(0,2), S_RE=rep(-3,Nrg), RE_sd=0.5 #See if removing the initial values altogether works
                  S_bReach=c(1.5,0.5,0.5,0.5) )
   
@@ -406,7 +409,8 @@ for(irun in 15:15){
   inits <- list(inits1,inits2,inits3)
   
   fit <- stan(file=paste0("scripts/",ModNm,".stan"),data=model_data, init=inits, chains=nchains,
-              iter=niter,warmup=nwarmup,include=T,pars=ParSaveList,seed=1234)#,algorithm = "Fixed_param",sample_file="post.txt",diagnostic_file="diagnostic.txt" #algorithm = "Fixed_param"
+              iter=niter,warmup=nwarmup,include=T,pars=ParSaveList,seed=1234,
+              control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth))#,algorithm = "Fixed_param",sample_file="post.txt",diagnostic_file="diagnostic.txt" #algorithm = "Fixed_param"
   
   fitnm <- paste0("results/","fit_",ModNm,fnext,".Rdata")
   

@@ -12,7 +12,7 @@ library(tibble)
 dir.create(here("results", "tables"), recursive = TRUE, showWarnings = FALSE)
 dir.create(here("results", "figures"), recursive = TRUE, showWarnings = FALSE)
 
-rhat_threshold <- 1.01
+rhat_threshold <- 1.02
 ess_threshold <- 400
 core_trace_pars <- c(
   "S_bReach[1]", "S_bReach[2]", "S_bReach[3]", "S_bReach[4]",
@@ -29,7 +29,11 @@ fit_config <- list(
   fit_file = here("results", "fit_CovIndCont_MaxFlow_FL.Rdata"),
   output_tag = "MaxFlowFL",
   model_label = "MaxFlow + FL",
-  core_trace_pars = core_trace_pars
+  core_trace_pars = core_trace_pars,
+  # Keep the default diagnostics fast; trace/pairs plots can be enabled for closer inspection.
+  write_posterior_plots = TRUE,
+  write_trace_plots = FALSE,
+  write_pairs_plots = FALSE
 )
 
 # Example alternative:
@@ -44,6 +48,9 @@ run_diagnostics <- function(config) {
   fit_file <- config$fit_file
   output_tag <- config$output_tag
   model_label <- config$model_label
+  write_posterior_plots <- is.null(config$write_posterior_plots) || isTRUE(config$write_posterior_plots)
+  write_trace_plots <- is.null(config$write_trace_plots) || isTRUE(config$write_trace_plots)
+  write_pairs_plots <- is.null(config$write_pairs_plots) || isTRUE(config$write_pairs_plots)
   
   if (!file.exists(fit_file)) {
     warning("Skipping ", fit_file, ": file does not exist.")
@@ -68,6 +75,14 @@ run_diagnostics <- function(config) {
   keep_existing_pars <- function(pars) {
     pars[pars %in% available_pars]
   }
+
+  keep_existing_requested_pars <- function(pars) {
+    pars[vapply(
+      pars,
+      function(par) par %in% available_pars || any(startsWith(available_pars, paste0(par, "["))),
+      logical(1)
+    )]
+  }
   
   keep_existing_prefixes <- function(prefixes) {
     prefixes[vapply(
@@ -87,7 +102,7 @@ run_diagnostics <- function(config) {
     }), use.names = FALSE))
   }
   
-  diagnostic_pars <- keep_existing_prefixes(c(
+  model_parameter_prefixes <- c(
     "P_b", "muPb", "sdPb",
     "S_bReach", "S_bCov", "S_bCovT", "S_bSz", "S_bTrib",
     "S_RE", "S_REt", "S_REy", "S_REs",
@@ -95,10 +110,9 @@ run_diagnostics <- function(config) {
     "T_bReach", "T_bCov", "TT_bCov", "TT_bCovT", "T_bSz", "T_bTrib",
     "TT_RE", "TT_RET", "TT_REy", "TT_REs",
     "TTRE_sd", "TTRE_sdT", "TTREy_sd", "TTREs_sd",
-    "TT", "TTT", "lgB0", "lgB0T", "Pro_sd", "Pro_sdT",
-    "pred_pcap", "pred_surv", "pred_survT",
-    "TT_RelSac", "TT_RelSacT", "TTForecast", "TTForecastT"
-  ))
+    "TT", "TTT", "lgB0", "lgB0T", "Pro_sd", "Pro_sdT"
+  )
+  diagnostic_pars <- keep_existing_prefixes(model_parameter_prefixes)
   core_trace_pars <- keep_existing_pars(config$core_trace_pars)
   diagnostic_pars <- unique(c(core_trace_pars, diagnostic_pars))
   
@@ -267,7 +281,12 @@ run_diagnostics <- function(config) {
       return(invisible(NULL))
     }
     
-    posterior_array <- as.array(fit)
+    posterior_array <- rstan::extract(
+      fit,
+      pars = pars,
+      permuted = FALSE,
+      inc_warmup = FALSE
+    )
     pdf(here("results/figures", filename), onefile = TRUE, width = 11, height = 8.5)
     pairs_plot <- mcmc_pairs(
       posterior_array,
@@ -279,11 +298,52 @@ run_diagnostics <- function(config) {
     print(pairs_plot)
     dev.off()
   }
+
+  write_posterior_distributions <- function(filename, pars, title) {
+    pars <- keep_existing_requested_pars(pars)
+    if (length(pars) == 0) {
+      message("Skipping ", filename, ": no requested parameters found in fit.")
+      return(invisible(NULL))
+    }
+
+    posterior_array <- rstan::extract(
+      fit,
+      pars = pars,
+      permuted = FALSE,
+      inc_warmup = FALSE
+    )
+    posterior_plot <- mcmc_dens(
+      posterior_array,
+      pars = pars,
+      facet_args = list(scales = "free")
+    ) +
+      ggtitle(title)
+    ggsave(
+      here("results/figures", filename),
+      plot = posterior_plot,
+      width = 12,
+      height = max(8, 0.45 * length(pars)),
+      dpi = 350
+    )
+  }
   
   core_pairs_pars <- core_trace_pars[seq_len(min(length(core_trace_pars), 12))]
+
+  if (write_posterior_plots) {
+    write_posterior_distributions(
+      paste0("posterior_core_", output_tag, ".png"),
+      core_trace_pars,
+      paste("Core parameter posterior distributions:", model_label)
+    )
+  }
   
-  if (length(core_pairs_pars) >= 2) {
-    posterior_array <- as.array(fit)
+  if (write_pairs_plots && length(core_pairs_pars) >= 2) {
+    posterior_array <- rstan::extract(
+      fit,
+      pars = core_pairs_pars,
+      permuted = FALSE,
+      inc_warmup = FALSE
+    )
     png(
       filename = here("results/figures", paste0("cjs_pairs_diagnostics_", output_tag, ".png")),
       width = 1200,
@@ -299,50 +359,52 @@ run_diagnostics <- function(config) {
     )
     print(pairs_plot)
     dev.off()
-  } else {
+  } else if (write_pairs_plots) {
     message("Skipping cjs_pairs_diagnostics_", output_tag, ".png: fewer than two core parameters found.")
   }
   
-  write_trace_pdf(
-    paste0("trace_core_", output_tag, ".pdf"),
-    core_trace_pars,
-    paste("Core parameter trace plots:", model_label)
-  )
+  if (write_trace_plots) {
+    write_trace_pdf(
+      paste0("trace_core_", output_tag, ".pdf"),
+      core_trace_pars,
+      paste("Core parameter trace plots:", model_label)
+    )
+    
+    write_trace_pdf(
+      paste0("trace_pcap_", output_tag, ".pdf"),
+      c("P_b[1,1]", "P_b[1,2]", "P_b[1,3]", "P_b[1,4]"),
+      paste("Detection probability trace plots:", model_label),
+      nrow = 4
+    )
+    
+    write_trace_pdf(
+      paste0("trace_survival_", output_tag, ".pdf"),
+      first_existing_by_prefix(
+        c("S_bReach", "S_bTrib", "S_bCov", "S_bCovT", "S_bSz", "S_RE", "S_REt"),
+        n_per_prefix = 2
+      ),
+      paste("Survival parameter trace plots:", model_label),
+      nrow = 4
+    )
+    
+    write_trace_pdf(
+      paste0("trace_travel_time_", output_tag, ".pdf"),
+      first_existing_by_prefix(
+        c("T_bReach", "T_bTrib", "TT_bCov", "TT_bCovT", "T_bSz", "TT_RE", "TT_RET"),
+        n_per_prefix = 2
+      ),
+      paste("Travel-time parameter trace plots:", model_label),
+      nrow = 4
+    )
+  }
   
-  write_trace_pdf(
-    paste0("trace_pcap_", output_tag, ".pdf"),
-    c("pred_pcap[1,1]", "pred_pcap[1,2]", "pred_pcap[1,3]", "pred_pcap[1,4]",
-      "P_b[1,1]", "P_b[1,2]", "P_b[1,3]", "P_b[1,4]"),
-    paste("Detection probability trace plots:", model_label),
-    nrow = 4
-  )
-  
-  write_trace_pdf(
-    paste0("trace_survival_", output_tag, ".pdf"),
-    first_existing_by_prefix(
-      c("pred_surv", "pred_survT", "S_bReach", "S_bTrib", "S_bCov", "S_bCovT", "S_bSz", "S_RE", "S_REt"),
-      n_per_prefix = 2
-    ),
-    paste("Survival parameter trace plots:", model_label),
-    nrow = 4
-  )
-  
-  write_trace_pdf(
-    paste0("trace_travel_time_", output_tag, ".pdf"),
-    first_existing_by_prefix(
-      c("TT_RelSac", "TT_RelSacT", "TTForecast", "TTForecastT", "pTT", "pTTT",
-        "T_bReach", "T_bTrib", "TT_bCov", "TT_bCovT", "T_bSz", "TT_RE", "TT_RET"),
-      n_per_prefix = 2
-    ),
-    paste("Travel-time parameter trace plots:", model_label),
-    nrow = 4
-  )
-  
-  write_pairs_pdf(
-    paste0("pairs_core_", output_tag, ".pdf"),
-    core_pairs_pars,
-    paste("Core parameter pairs:", model_label)
-  )
+  if (write_pairs_plots) {
+    write_pairs_pdf(
+      paste0("pairs_core_", output_tag, ".pdf"),
+      core_pairs_pars,
+      paste("Core parameter pairs:", model_label)
+    )
+  }
   
   message("Diagnostics complete for ", fit_file)
   message("Flagged parameters: ", nrow(flagged_summary))

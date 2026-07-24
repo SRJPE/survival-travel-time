@@ -20,7 +20,7 @@ dir.create(path, showWarnings = FALSE)
 
 studyIDs <- c("ColemanFall_2013","ColemanFall_2016","ColemanFall_2017",
               "CNFH_FMR_2019","CNFH_FMR_2020","CNFH_FMR_2021",
-              "ColemanAltRel_2021", "ColemanAltRel_2022",
+             # "ColemanAltRel_2021", "ColemanAltRel_2022",
               "RBDD_2017","RBDD_2018","Wild_stock_Chinook_Rbdd_2021",
               "Wild_stock_Chinook_RBDD_2022","Wild_stock_Chinook_Rbdd_2024",
               "SacRiverSpringJPE_2022","SacRiverSpringJPE_2023", "SacRiverSpringJPE_2024",
@@ -87,18 +87,17 @@ DH_df <- bind_rows(all_DH) %>%
          month=month(min_time))
 
 # clean up DH by removing some fish
-# Remove  2021  and 2022 non battle creek release location from Net pen studies
-netpen_ids_to_remove <- c(
-  sprintf("ColemanAltRel-2021-%03d", 1:300),
-  sprintf("ColemanAltRel-2022-%03d", 301:600))
+# # Remove  2021  and 2022 non battle creek release location from Net pen studies
+# netpen_ids_to_remove <- c(
+#   sprintf("ColemanAltRel-2021-%03d", 1:300),
+#   sprintf("ColemanAltRel-2022-%03d", 301:600))
 
 # Remove winter and late fall-run fish tagged
 lfw_ids_to_remove <- c("RBDD_WS2022-028",sprintf("SS_2024-%03d", 1:766))
 
 DH_df <- DH_df %>% 
   filter(FishID != "SP2023-1033") %>% # fish without size info
-  filter(!FishID %in% lfw_ids_to_remove) %>% 
-  filter(!FishID %in% netpen_ids_to_remove)
+  filter(!FishID %in% lfw_ids_to_remove) 
 
 write.csv(DH_df,"./data/DetectionHistorySac.csv", row.names=FALSE)
 
@@ -117,7 +116,6 @@ all.inp <- all.inp %>%
 all.inp <- all.inp %>% 
            filter(FishID != "SP2023-1033") %>% # fish without size info
            filter(!FishID %in% c("RBDD_WS2021-001","RBDD_WS2021-008")) %>%  # fish not found in the DH table
-           filter(release_location != "SacRiver_ButteCity_Rel") %>% # non battle creek release location from Net pen studies
            filter(!fish_type %in% c("CNFH Late-fall Chinook","LSNFH Winter Chinook", "LAD_winter_Chinook")) # winter and late fall-run fish 
 
 # calculate K factor and make sure fish cov are numeric factors
@@ -273,6 +271,12 @@ all.inp_B$year <- as.factor(year(as.Date(all.inp_B$fish_release_date,format="%m/
 
 write.csv(all.inp_B,"./data/ButteInp.csv", row.names=FALSE)
 
+
+# Combine Feather and Butte inp files ---------------------------------------------
+all.inp_FB <- data.frame(rbind(all.inp_F,all.inp_B))
+
+write.csv(all.inp_FB,"./data/FeatherButteInp.csv", row.names=FALSE)
+
 # Create Yuba River's tagged fish detection history  -----------------------------------------------------------------------------------------
 name <- "YubaRiverAllYears"
 path <- paste0("./data/", name, "/")
@@ -343,14 +347,6 @@ all.inp_Y$year <- as.factor(year(as.Date(all.inp_Y$fish_release_date,format="%m/
 
 write.csv(all.inp_Y,"./data/YubaInp.csv", row.names=FALSE)
 
-# Combine Feather and Butte (and eventually yuba) inp files ---------------------------------------------
-all.inp_FB <- data.frame(rbind(all.inp_F,all.inp_B))
-
-write.csv(all.inp_FB,"./data/FeatherButteInp.csv", row.names=FALSE)
-
-all.inp_FBY <- data.frame(rbind(all.inp_F,all.inp_B, all.inp_Y))
-
-write.csv(all.inp_FBY,"./data/FeatherButteYubaInp.csv", row.names=FALSE)
 
 # Create full data set for CJS survival + travel time modelling -----------------------------------------------------------------------------
 ### Read required data 
