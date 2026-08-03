@@ -116,32 +116,46 @@ cjs_reach_km <- colMeans(ReachKM_ind[, 1:3, drop = FALSE], na.rm = TRUE)
 shared_median_flow <- median(c(cwt_groups$Maxflowsac, MaxflowSac), na.rm = TRUE)
 
 shared_fl_grid <- seq(
-  from = floor(min(cwt_groups$avg_length, na.rm = TRUE)),
-  to = 100,
+  from = floor(min(c(cwt_groups$avg_length, FL), na.rm = TRUE)),
+  to = ceiling(max(c(cwt_groups$avg_length, FL), na.rm = TRUE)),
   length.out = 100
 )
 
-shared_flow_min <- max(
-  min(cwt_groups$Maxflowsac, na.rm = TRUE),
-  min(MaxflowSac, na.rm = TRUE)
-)
-shared_flow_max <- min(
-  max(cwt_groups$Maxflowsac, na.rm = TRUE),
-  max(MaxflowSac, na.rm = TRUE)
-)
-
-if (!is.finite(shared_flow_min) || !is.finite(shared_flow_max) || shared_flow_min >= shared_flow_max) {
-  shared_flow_min <- min(c(cwt_groups$Maxflowsac, MaxflowSac), na.rm = TRUE)
-  shared_flow_max <- max(c(cwt_groups$Maxflowsac, MaxflowSac), na.rm = TRUE)
-}
-
 shared_flow_grid <- seq(
-  from = shared_flow_min,
-  to = shared_flow_max,
+  from = floor(min(c(cwt_groups$Maxflowsac, MaxflowSac), na.rm = TRUE)),
+  to = ceiling(max(c(cwt_groups$Maxflowsac, MaxflowSac), na.rm = TRUE)),
   length.out = 100
 )
 
 shared_fl_mm <- median(c(cwt_groups$avg_length, FL), na.rm = TRUE)
+
+fl_rug_data <- bind_rows(
+  cwt_groups %>%
+    transmute(
+      model = "CWT",
+      fork_length_mm = avg_length
+    ),
+  tibble(
+    model = "CJS",
+    fork_length_mm = FL
+  )
+) %>%
+  filter(is.finite(fork_length_mm)) %>%
+  mutate(model = factor(model, levels = c("CWT", "CJS")))
+
+flow_rug_data <- bind_rows(
+  cwt_groups %>%
+    transmute(
+      model = "CWT",
+      max_flow_cfs = Maxflowsac
+    ),
+  tibble(
+    model = "CJS",
+    max_flow_cfs = MaxflowSac
+  )
+) %>%
+  filter(is.finite(max_flow_cfs)) %>%
+  mutate(model = factor(model, levels = c("CWT", "CJS")))
 
 # Prediction functions --------------------------------------------------------------
 cwt_draws_one <- function(size_mm, area, flow_cfs = cwt_median_flow) {
@@ -320,9 +334,19 @@ plot_fl_comparison <- ggplot(
 ) +
   geom_ribbon(aes(ymin = q2.5, ymax = q97.5), alpha = 0.18, color = NA) +
   geom_line(linewidth = 0.9) +
+  geom_rug(
+    data = fl_rug_data,
+    aes(x = fork_length_mm, color = model),
+    inherit.aes = FALSE,
+    sides = "b",
+    alpha = 0.35,
+    linewidth = 0.35
+  ) +
   facet_wrap(~ metric, scales = "free_y", ncol = 1, strip.position = "left") +
   scale_x_continuous(
-    breaks = seq(floor(min(shared_fl_grid) / 5) * 5, 100, by = 5)
+    breaks = seq(floor(min(shared_fl_grid) / 5) * 5,
+                 ceiling(max(shared_fl_grid) / 5) * 5,
+                 by = 5)
   ) +
   theme_bw() +
   theme(
@@ -358,6 +382,14 @@ plot_flow_comparison <- ggplot(
 ) +
   geom_ribbon(aes(ymin = q2.5, ymax = q97.5), alpha = 0.18, color = NA) +
   geom_line(linewidth = 0.9) +
+  geom_rug(
+    data = flow_rug_data,
+    aes(x = max_flow_cfs, color = model),
+    inherit.aes = FALSE,
+    sides = "b",
+    alpha = 0.35,
+    linewidth = 0.35
+  ) +
   facet_wrap(~ metric, scales = "free_y", ncol = 1, strip.position = "left") +
   scale_x_continuous(
     breaks = scales::pretty_breaks(n = 8),
