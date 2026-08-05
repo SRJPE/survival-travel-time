@@ -8,8 +8,7 @@ This section lists modifications made following the Delta Stewardship Council In
 
 | Comment | Model Update |
 | --- | --- |
-| Verify whether large acoustically-tagged smolts represent much smaller fry when estimating survival and travel time from RSTs to the Delta
- | In progress. A model that combines the smolt survival (acoustic tagging data) with fry survival (coded wire tagging data) is being developed to compare and potentially combine survival rates across smaller fish lengths. |
+| Verify whether large acoustically-tagged smolts represent much smaller fry when estimating survival and travel time from RSTs to the Delta | In progress. A model that combines the smolt survival (acoustic tagging data) with fry survival (coded wire tagging data) is being developed to compare and potentially combine survival rates across smaller fish lengths. |
 | Validate that hatchery fish represent wild fish when measuring capture-efficiency at the RST and survival and travel times in the mainstem | TBD |
 | Attempt to fit a hierarchical model for the parameters in the survival rates per 100 kilometers) as was done for the detection probabilities. | TBD |
 | Consider temperature-based covariates | TBD |
