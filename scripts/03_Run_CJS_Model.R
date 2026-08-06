@@ -8,10 +8,13 @@ rm(list = ls())
 source("scripts/02_GetData.R")
 
 nchains <- 3
-niter <- 3000
-nwarmup <- 1500
-adapt_delta <- 0.995
-max_treedepth <- 15
+niter <- 1000 
+
+# Options to improve convergence if it's an issue but takes a longer time to run and the R object is very large
+#niter <- 3000
+#nwarmup <- 1500
+#adapt_delta <- 0.995
+#max_treedepth <- 15
 
 for(irun in 15:15){
   ModNm <- switch(irun,"NoCov","CovIndWY","CovIndWY","CovIndWY","CovIndWY",
@@ -409,9 +412,9 @@ for(irun in 15:15){
   inits <- list(inits1,inits2,inits3)
   
   fit <- stan(file=paste0("scripts/",ModNm,".stan"),data=model_data, init=inits, chains=nchains,
-              iter=niter,warmup=nwarmup,include=T,pars=ParSaveList,seed=1234,
-              control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth))#,algorithm = "Fixed_param",sample_file="post.txt",diagnostic_file="diagnostic.txt" #algorithm = "Fixed_param"
-  
+              iter=niter,
+              #warmup=nwarmup,control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth),
+              include=T,pars=ParSaveList,seed=1234) 
   fitnm <- paste0("results/","fit_",ModNm,fnext,".Rdata")
   
   save(fit,file=fitnm)        
