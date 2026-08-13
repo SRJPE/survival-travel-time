@@ -12,7 +12,7 @@ source("scripts/02_GetData.R")
 
 # Change this block when generating predictions from a different CJS fit.
 prediction_config <- list(
-  fit_file = here("results", "fit_CovIndContv2_TT_clean_MaxFlow_FL.Rdata"),
+  fit_file = here("results", "fit_CovIndCont_MaxFlow_FL.Rdata"),
   output_tag = "MaxFlowFL"
 )
 
