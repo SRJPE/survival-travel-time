@@ -1,6 +1,6 @@
 //CJS model taken from stan example at https://mc-stan.org/docs/stan-users-guide/mark-recapture-models.html
 //This version uses year-reach specific pCaps. 
-// Survival influenced by fish size at release or 2 or 3-level water year type fixed effect or both cumulatively
+// Base don the panel review suggestion this version is a site and year randon effect model
 //and random effect for year-release group
 data {
   int Nind;
