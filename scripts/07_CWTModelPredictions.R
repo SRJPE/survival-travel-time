@@ -252,7 +252,7 @@ flow_pred_grid <- expand_grid(
       color = "Release area",
       fill = "Release area",
       title = "CWT Predicted Survival by Fish Length",
-      subtitle = paste0("Red Bluff max flow held at median CWT value: ",
+      subtitle = paste0("Knights Landing max flow held at median CWT value: ",
                         round(median(cwt_groups$Maxflowsac, na.rm = TRUE), 0))
     ))
 
@@ -270,7 +270,7 @@ flow_pred_grid <- expand_grid(
       color = "Release area",
       fill = "Release area",
       title = "CWT Predicted Travel Time by Fish Length",
-      subtitle = paste0("Red Bluff max flow held at median CWT value: ",
+      subtitle = paste0("Knights Landing max flow held at median CWT value: ",
                         round(median(cwt_groups$Maxflowsac, na.rm = TRUE), 0))
     ))
 
@@ -284,11 +284,11 @@ flow_pred_grid <- expand_grid(
     scale_y_continuous(limits = c(0, 1), labels = scales::percent_format(accuracy = 1)) +
     theme_bw() +
     labs(
-      x = "Monthly max flow at Red Bluff",
+      x = "Monthly max flow at Knights Landing",
       y = "Predicted survival",
       color = "Release area",
       fill = "Release area",
-      title = "CWT Predicted Survival by Red Bluff Max Flow",
+      title = "CWT Predicted Survival by Knights Landing Max Flow",
       subtitle = paste0("Fish length held at median CWT value: ",
                         round(median(cwt_groups$avg_length, na.rm = TRUE), 0), " mm")
     ))
@@ -302,11 +302,11 @@ flow_pred_grid <- expand_grid(
              sides = "b", alpha = 0.25) +
     theme_bw() +
     labs(
-      x = "Monthly max flow at Red Bluff",
+      x = "Monthly max flow at Knights Landing",
       y = "Predicted travel time to Knights Landing (days)",
       color = "Release area",
       fill = "Release area",
-      title = "CWT Predicted Travel Time by Red Bluff Max Flow",
+      title = "CWT Predicted Travel Time by Knights Landing Max Flow",
       subtitle = paste0("Fish length held at median CWT value: ",
                         round(median(cwt_groups$avg_length, na.rm = TRUE), 0), " mm")
     ))

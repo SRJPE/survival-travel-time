@@ -362,7 +362,7 @@ plot_fl_comparison <- ggplot(
     subtitle = paste0(
       "CWT release locations combined; CJS Sacramento only; FL range ",
       round(min(shared_fl_grid), 1), "-", round(max(shared_fl_grid), 1),
-      " mm; Red Bluff max flow fixed at ", scales::comma(round(shared_median_flow, 0)), " cfs"
+      " mm; Knights Landing max flow fixed at ", scales::comma(round(shared_median_flow, 0)), " cfs"
     )
   )
 
@@ -401,11 +401,11 @@ plot_flow_comparison <- ggplot(
     strip.background = element_blank()
   ) +
   labs(
-    x = "Red Bluff max flow (cfs)",
+    x = "Knights Landing max flow (cfs)",
     y = NULL,
     color = "Model",
     fill = "Model",
-    title = "CWT vs CJS Red Bluff flow predictions",
+    title = "CWT vs CJS Knights Landing flow predictions",
     subtitle = paste0(
       "CWT release locations combined; CJS Sacramento only; FL fixed at ",
       round(shared_fl_mm, 1), " mm"

@@ -360,7 +360,7 @@ unique(Envdata_flowwest$name)
 
 maxflow_Sac <-Envdata_flowwest %>% 
   filter(name=="monthly_max_flow" & stream == "sacramento river" &
-           site_group == "red bluff diversion dam") %>% 
+           site_group == "knights landing") %>%  #"red bluff diversion dam"
   mutate(Maxflowsac = value,
          Maxflow.z = scale(Maxflowsac)) %>% 
   select(year,month,Maxflowsac,Maxflow.z)
