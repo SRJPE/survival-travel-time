@@ -20,7 +20,7 @@ library(here)
 # Change this block when comparing different model outputs.
 compare_config <- list(
   cwt_fit_file = here("results", "fit_CWT.Rdata"),
-  cjs_fit_file = here("results", "fit_CovIndCont_MaxFlow_FL.Rdata"),
+  cjs_fit_file = here("results", "fit_CovIndCont_MaxFlow_FL_0226.Rdata"),
   output_tag = "CWT_CJS"
 )
 
