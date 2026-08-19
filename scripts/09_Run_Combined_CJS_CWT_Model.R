@@ -301,9 +301,9 @@ diagnostic_pars <- c(
   "S_bCov_shared", "S_bCov_cjs", "S_bCov_cwt",
   "S_bSz_shared", "S_bSz_cjs", "S_bSz_cwt",
   "T_bCJS", "T_bCWT",
-  "TT_bCov_shared", "TT_bCov_cjs", "TT_bCov_cwt",
+  "TT_bCov_cjs", "TT_bCov_cwt",
   "T_bSz_shared", "T_bSz_cjs", "T_bSz_cwt",
-  "sigma_S_bCov_model", "sigma_TT_bCov_model", "sigma_S_bSz_model", "sigma_T_bSz_model",
+  "sigma_S_bCov_model", "sigma_S_bSz_model", "sigma_T_bSz_model",
   "RE_sd", "sd_cwtSre",
   "TTRE_sd", "sd_cwtTTre", "Pro_sd", "Pro_sd_cwt"
 )
@@ -415,9 +415,9 @@ if (!isTRUE(convergence_check$converged)) {
 trace_pars <- c(
   "S_bCov_shared", "S_bCov_cjs", "S_bCov_cwt",
   "S_bSz_shared", "S_bSz_cjs", "S_bSz_cwt",
-  "TT_bCov_shared", "TT_bCov_cjs", "TT_bCov_cwt",
+  "TT_bCov_cjs", "TT_bCov_cwt",
   "T_bSz_shared", "T_bSz_cjs", "T_bSz_cwt",
-  "sigma_S_bCov_model", "sigma_TT_bCov_model",
+  "sigma_S_bCov_model",
   "sigma_S_bSz_model", "sigma_T_bSz_model",
   "S_bCWT", "T_bCWT", "sd_cwtSre", "sd_cwtTTre",
   "Pro_sd", "Pro_sd_cwt"

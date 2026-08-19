@@ -2,7 +2,8 @@
 // CJS uses Sacramento River mainstem fish only with multiple mainstem reaches.
 // Butte and Feather tributary CJS likelihoods are excluded. CWT release groups
 // are modeled to Knights Landing. Fork-length and flow effects are partially
-// shared: each effect has a shared mean plus CJS- and CWT-specific deviations.
+// shared for survival and size effects; travel-time flow effects are separated
+// for CJS and CWT to avoid forcing a common flow-travel-time relationship.
 data {
   int Nind;
   int Nreaches;
@@ -58,15 +59,14 @@ parameters {
   real<lower=-5, upper=5> T_bCWT;
 
   real<lower=-10, upper=10> S_bCov_shared;
-  real<lower=-10, upper=10> TT_bCov_shared;
+  real<lower=-5, upper=5> TT_bCov_cjs;
+  real<lower=-5, upper=5> TT_bCov_cwt;
   real<lower=-10, upper=10> S_bSz_shared;
   real<lower=-10, upper=10> T_bSz_shared;
   vector[2] z_S_bCov_model;
-  vector[2] z_TT_bCov_model;
   vector[2] z_S_bSz_model;
   vector[2] z_T_bSz_model;
   real<lower=0.001> sigma_S_bCov_model;
-  real<lower=0.001> sigma_TT_bCov_model;
   real<lower=0.001> sigma_S_bSz_model;
   real<lower=0.001> sigma_T_bSz_model;
 
@@ -88,8 +88,6 @@ parameters {
 transformed parameters {
   real S_bCov_cjs = S_bCov_shared + sigma_S_bCov_model * z_S_bCov_model[1];
   real S_bCov_cwt = S_bCov_shared + sigma_S_bCov_model * z_S_bCov_model[2];
-  real TT_bCov_cjs = TT_bCov_shared + sigma_TT_bCov_model * z_TT_bCov_model[1];
-  real TT_bCov_cwt = TT_bCov_shared + sigma_TT_bCov_model * z_TT_bCov_model[2];
   real S_bSz_cjs = S_bSz_shared + sigma_S_bSz_model * z_S_bSz_model[1];
   real S_bSz_cwt = S_bSz_shared + sigma_S_bSz_model * z_S_bSz_model[2];
   real T_bSz_cjs = T_bSz_shared + sigma_T_bSz_model * z_T_bSz_model[1];
@@ -165,15 +163,14 @@ model {
   S_bCWT ~ normal(0, 1.5);
   T_bCWT ~ normal(0, 1.5);
   S_bCov_shared ~ normal(0, 1);
-  TT_bCov_shared ~ normal(0, 1);
+  TT_bCov_cjs ~ normal(0, 0.25);
+  TT_bCov_cwt ~ normal(0, 0.25);
   S_bSz_shared ~ normal(0, 1);
   T_bSz_shared ~ normal(0, 1);
   z_S_bCov_model ~ normal(0, 1);
-  z_TT_bCov_model ~ normal(0, 1);
   z_S_bSz_model ~ normal(0, 1);
   z_T_bSz_model ~ normal(0, 1);
   sigma_S_bCov_model ~ normal(0, 0.5);
-  sigma_TT_bCov_model ~ normal(0, 0.5);
   sigma_S_bSz_model ~ normal(0, 0.5);
   sigma_T_bSz_model ~ normal(0, 0.5);
 
@@ -221,7 +218,7 @@ generated quantities {
     ) ^ (pred_reach_km_combined / 100);
     pred_combined_travel_time_by_size[k] = exp(
       mean(T_bCJS) * 0.5 + 0.5 * T_bCWT +
-      TT_bCov_shared * pred_cov_mean +
+      (0.5 * TT_bCov_cjs + 0.5 * TT_bCov_cwt) * pred_cov_mean +
       UseSizeEffect * T_bSz_shared * pred_size_z[k]
     ) * pred_reach_km_combined / 100;
   }
@@ -234,7 +231,7 @@ generated quantities {
     ) ^ (pred_reach_km_combined / 100);
     pred_combined_travel_time_by_flow[k] = exp(
       mean(T_bCJS) * 0.5 + 0.5 * T_bCWT +
-      TT_bCov_shared * pred_cov_combined[k] +
+      (0.5 * TT_bCov_cjs + 0.5 * TT_bCov_cwt) * pred_cov_combined[k] +
       UseSizeEffect * T_bSz_shared * pred_size_mean_z
     ) * pred_reach_km_combined / 100;
   }
