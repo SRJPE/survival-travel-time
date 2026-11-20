@@ -1,0 +1,17 @@
+file,bytes,md5,made_by,what,written
+survival_pars.csv.gz,511578,e4327015dcf4460dca2d79b0712f85f1,12_export_survival_pars.R,"survival parameter draws (8,000), one row per draw",2026-11-19 07:45
+survival_sites.csv,1502,166b9fa745b123ed205a146cac076a34,12_export_survival_pars.R,"RST sites: curve, distances, gauge, scaling, fitted discharge range",2026-11-19 07:45
+travel_time_pars.csv.gz,587404,794c6dde51d46e99ccc69ff940cae44d,12b_export_travel_time_pars.R,"travel-time parameter draws, same draw index as survival_pars",2026-11-19 07:45
+travel_time_sites.csv,1657,d90cc4afe2b80c88eaf3b98c0ccd721b,12b_export_travel_time_pars.R,survival_sites plus reach lengths km1-km3,2026-11-19 07:45
+lorenzen_pars.csv.gz,176396,47f30b1178f1535d80c030cb1b14259b,13_export_lorenzen_pars.R,Lorenzen exponent c per draw (only for small_fish = 'lorenzen'),2026-11-19 07:45
+survival_predict_functions.R,11611,ab5393789cf1055e9ed084fb50d74672,R/,"predict_survival(), predict_travel_time(), draw_re()",2026-11-19 07:45
+discharge/scenario_seasons.csv,267,d3519581d9e903d06431e8b4bbac8ccb,15_discharge_scenarios.R,seasons defining dry / average / wet,2026-11-19 07:45
+discharge/monthly_max_by_season.csv,40467,92a08c11b50f764f4a59f9e024dfd180,15_discharge_scenarios.R,"monthly max discharge by gauge, season, month",2026-11-19 07:45
+fit_checksums.csv,208,dad5f1d506c8a47fbed5c20eba7dbf16,09_check_fits.R,md5 of the fits these files came from,2026-11-19 07:45
+README.md,2766,0f5a1db0a2ba8331cc385779cbef35c1,handoff/README.md,what the files are and how to use them,2026-11-19 07:45
+fits/fit_CovIndCont_studymonth_ncRE_KLdelta_MaxFlow_FL.Rdata,6529439027,2ce4c925fb015ccefb3b2dfb9a58ab5a,03_fit_telemetry.R,telemetry fit; input to export steps 10 and 11 (in SharePoint),2026-11-19 07:45
+fits/fit_CWT_gamma_G1.Rdata,129135487,b76c57c22058a8474d11037b2903a0cd,07_fit_cwt_gamma.R,CWT gamma fit G1; input to export step 13 (in SharePoint),2026-11-19 07:45
+SRJPEdata commit,NA,NA,d3584db2a7230a85d3fdb06b5df1b9f794c3a197,"data version used by 01, 02 and 15",2026-11-19 07:45
+R version,NA,NA,R version 4.5.1 (2025-06-13 ucrt),,2026-11-19 07:45
+CmdStan version,NA,NA,2.39.0,,2026-11-19 07:45
+srjpe_survival git commit,NA,NA,NA,uncommitted changes are not recorded,2026-11-19 07:45
