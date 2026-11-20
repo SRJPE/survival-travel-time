@@ -83,3 +83,10 @@ This project is licensed under the GNU General Public License v3.0 — see `LICE
 ## Contact
 
 For questions about the code or data, contact [author name] at [email].
+
+## V1 survival model (November 2026)
+
+The production survival and travel-time pipeline used for the WY2027 JPE (V1) is in
+[`v1/`](v1/). Open `v1/v1.Rproj` and see [`v1/WORKFLOW.md`](v1/WORKFLOW.md): how to
+refit the telemetry and CWT models, export the files handed to runSRJPE, and what each
+input is. The rest of this repo is the original analysis and is unchanged.
